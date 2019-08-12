@@ -4,18 +4,28 @@ let AWS = require('ibm-cos-sdk');
 const config = require('./config');
 let cos = new AWS.S3(config.config);
 
-let persist = function (filePath, fileName) {
+let persist = function (files) {
+// let persist = function (filePath, fileName) {
+  let currentFile = files.pop();
   return new Promise((resolve, reject) => {
-      console.log('Uploading file: ' + fileName);
+      console.log('Uploading file: ' + currentFile);
       var request = cos.putObject
       return cos.putObject({
           Bucket: config.BUCKET,
-          Key: fileName,
-          Body: fs.createReadStream(filePath),
+          Key: currentFile,
+          Body: fs.createReadStream('./assets/'+ currentFile),
           ACL: 'public-read'
       }).promise()
           .then(() => {
-              resolve(fileName)
+              if (files.length > 0) {
+                persist(files).then(() => {
+                  console.log("Qty pending: " + files.length + "file completed: ", currentFile)
+                  resolve(currentFile)    
+                })
+              } else {
+                console.log("last file completed: ", currentFile)
+                resolve(currentFile)
+              }
           })
           .catch((err) => {
               console.log(err);
@@ -24,13 +34,4 @@ let persist = function (filePath, fileName) {
   });
 };
 
-
-fs.readdirSync(testFolder).forEach(file => {
-  persist('./assets/' + file, file)
-  .then(fileName => {
-    console.log('Upload done: ' + fileName);
-  }) 
-  .catch(error => {
-    console.log('Error: ' + file);
-  });
-});
+persist(fs.readdirSync(testFolder))
