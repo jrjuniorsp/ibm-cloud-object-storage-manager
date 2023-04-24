@@ -9,6 +9,6 @@
   "author": "Jair Rillo Junior - jairrillo@gmail.com",
   "license": "ISC",
   "dependencies": {
-    "ibm-cos-sdk": "^1.4.5"
+    "ibm-cos-sdk": "^1.13.1"
   }
 }
